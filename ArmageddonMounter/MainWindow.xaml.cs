@@ -24,7 +24,7 @@ namespace ArmageddonMounter
 
             try
             {
-                fs = new DirFS(new Archive(args[0]));
+                fs = new DirFS(args[0]);
                 fs.Mount("w:\\", DokanOptions.StderrOutput);
             }
 
