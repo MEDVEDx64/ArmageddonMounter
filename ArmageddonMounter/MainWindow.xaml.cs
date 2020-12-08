@@ -1,6 +1,7 @@
 ﻿using DokanNet;
 using Syroot.Worms;
 using System;
+using System.Threading;
 using System.Windows;
 
 namespace ArmageddonMounter
@@ -25,7 +26,10 @@ namespace ArmageddonMounter
             try
             {
                 fs = new DirFS(args[0]);
-                fs.Mount("w:\\", DokanOptions.StderrOutput);
+                new Thread(() =>
+                {
+                    fs.Mount("w:\\", DokanOptions.StderrOutput);
+                }).Start();
             }
 
             catch(Exception e)

@@ -9,8 +9,6 @@ namespace ArmageddonMounter
 {
     class DirFS : IDokanOperations
     {
-        static readonly NtStatus HIERARCHY_NOT_SUPPORTED = NtStatus.InvalidDeviceRequest;
-
         Archive arc;
         string arcPath;
         string volumeName;
@@ -39,20 +37,27 @@ namespace ArmageddonMounter
             return DokanResult.Success;
         }
 
-        bool RequestIsValid(string path, IDokanFileInfo info)
+        NtStatus AllocateFile(string key)
         {
-            if (info.IsDirectory)
-                return false;
+            if (key == "desktop.ini" || key == "Thumbs.db")
+                // We don't need these files here
+                return DokanResult.AccessDenied;
 
+            if (!arc.ContainsKey(key))
+                arc[key] = new byte[0];
+
+            return DokanResult.Success;
+        }
+
+        string GetFileKey(string path)
+        {
             if (path == "\\")
-                return true;
+                return path;
 
-            if(path.Length > 1)
-            {
-                return !path.Substring(1).Contains("\\");
-            }
+            if (path.StartsWith("\\"))
+                return path.Substring(1);
 
-            return path.Length > 0;
+            return path;
         }
 
         // ----- Dokan interface methods -----
@@ -68,26 +73,24 @@ namespace ArmageddonMounter
 
         public NtStatus CreateFile(string fileName, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, IDokanFileInfo info)
         {
-            if (!RequestIsValid(fileName, info))
-                return HIERARCHY_NOT_SUPPORTED;
+            fileName = GetFileKey(fileName);
 
             if ((mode == FileMode.Create || mode == FileMode.OpenOrCreate) && arc.ContainsKey(fileName))
+            {
                 return DokanResult.AlreadyExists;
+            }
 
-            arc[fileName] = new byte[0];
             return DokanResult.Success;
         }
 
         public NtStatus DeleteDirectory(string fileName, IDokanFileInfo info)
         {
-            return HIERARCHY_NOT_SUPPORTED;
+            return DokanResult.FileNotFound;
         }
 
         public NtStatus DeleteFile(string fileName, IDokanFileInfo info)
         {
-            if (!RequestIsValid(fileName, info))
-                return HIERARCHY_NOT_SUPPORTED;
-
+            fileName = GetFileKey(fileName);
             if (arc.ContainsKey(fileName))
             {
                 arc.Remove(fileName);
@@ -97,18 +100,12 @@ namespace ArmageddonMounter
             return DokanResult.FileNotFound;
         }
 
-        NtStatus FindFiles(string fileName, out IList<FileInformation> files, string pattern = null)
+        public NtStatus FindFiles(string fileName, out IList<FileInformation> files, IDokanFileInfo info)
         {
             files = new List<FileInformation>();
 
-            if (fileName != "\\")
-                return HIERARCHY_NOT_SUPPORTED;
-
             foreach (var k in arc.Keys)
             {
-                if (pattern != null && !k.Contains(pattern))
-                    continue;
-
                 files.Add(new FileInformation()
                 {
                     FileName = k,
@@ -119,14 +116,10 @@ namespace ArmageddonMounter
             return DokanResult.Success;
         }
 
-        public NtStatus FindFiles(string fileName, out IList<FileInformation> files, IDokanFileInfo info)
-        {
-            return FindFiles(fileName, out files);
-        }
-
         public NtStatus FindFilesWithPattern(string fileName, string searchPattern, out IList<FileInformation> files, IDokanFileInfo info)
         {
-            return FindFiles(fileName, out files, searchPattern);
+            files = new List<FileInformation>();
+            return DokanResult.NotImplemented;
         }
 
         public NtStatus FindStreams(string fileName, out IList<FileInformation> streams, IDokanFileInfo info)
@@ -159,9 +152,13 @@ namespace ArmageddonMounter
         {
             fileInfo = new FileInformation();
 
-            if (!RequestIsValid(fileName, info))
-                return HIERARCHY_NOT_SUPPORTED;
+            if(fileName == "\\")
+            {
+                fileInfo.Attributes = FileAttributes.Directory;
+                return DokanResult.Success;
+            }
 
+            fileName = GetFileKey(fileName);
             if (!arc.ContainsKey(fileName))
                 return DokanResult.FileNotFound;
 
@@ -174,10 +171,6 @@ namespace ArmageddonMounter
         public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info)
         {
             security = null;
-
-            if (!RequestIsValid(fileName, info))
-                return HIERARCHY_NOT_SUPPORTED;
-
             return NtStatus.NotImplemented;
         }
 
@@ -203,11 +196,11 @@ namespace ArmageddonMounter
 
         public NtStatus MoveFile(string oldName, string newName, bool replace, IDokanFileInfo info)
         {
-            if (!RequestIsValid(oldName, info) || !RequestIsValid(newName, info))
-                return HIERARCHY_NOT_SUPPORTED;
-
             if (oldName == newName)
                 return DokanResult.FileExists;
+
+            oldName = GetFileKey(oldName);
+            newName = GetFileKey(newName);
 
             arc[newName] = arc[oldName];
             arc.Remove(oldName);
@@ -216,7 +209,8 @@ namespace ArmageddonMounter
 
         public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, IDokanFileInfo info)
         {
-            if (!RequestIsValid(fileName, info) || !arc.ContainsKey(fileName))
+            fileName = GetFileKey(fileName);
+            if (!arc.ContainsKey(fileName))
             {
                 bytesRead = 0;
                 return DokanResult.FileNotFound;
@@ -237,8 +231,11 @@ namespace ArmageddonMounter
 
         public NtStatus SetEndOfFile(string fileName, long length, IDokanFileInfo info)
         {
-            if (!RequestIsValid(fileName, info))
-                return HIERARCHY_NOT_SUPPORTED;
+            fileName = GetFileKey(fileName);
+
+            var status = AllocateFile(fileName);
+            if (status != DokanResult.Success)
+                return status;
 
             var file = new byte[length];
             Array.Copy(arc[fileName], file, Math.Min(length, arc[fileName].Length));
@@ -250,10 +247,7 @@ namespace ArmageddonMounter
         public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, IDokanFileInfo info)
         {
             // Attribures is not supported here, so just ignoring it.
-            //return DokanResult.Success;
-
-            // test
-            return NtStatus.NotImplemented;
+            return DokanResult.Success;
         }
 
         public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info)
@@ -264,10 +258,7 @@ namespace ArmageddonMounter
         public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, IDokanFileInfo info)
         {
             // Storing of timestamps is not supported
-            //return DokanResult.Success;
-
-            // test
-            return NtStatus.NotImplemented;
+            return DokanResult.Success;
         }
 
         public NtStatus UnlockFile(string fileName, long offset, long length, IDokanFileInfo info)
@@ -282,15 +273,21 @@ namespace ArmageddonMounter
 
         public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, IDokanFileInfo info)
         {
-            if (!RequestIsValid(fileName, info))
+            fileName = GetFileKey(fileName);
+
+            var status = AllocateFile(fileName);
+            if (status != DokanResult.Success)
             {
                 bytesWritten = 0;
-                return HIERARCHY_NOT_SUPPORTED;
+                return status;
             }
 
-            if(buffer.Length + offset > arc[fileName].Length)
+            if (offset == -1) // Append mode
+                offset = arc[fileName].Length;
+
+            if ((buffer.Length + offset) > arc[fileName].Length)
             {
-                var status = SetEndOfFile(fileName, buffer.Length + offset, info);
+                status = SetEndOfFile(fileName, buffer.Length + offset, info);
                 if (status != DokanResult.Success)
                 {
                     bytesWritten = 0;
