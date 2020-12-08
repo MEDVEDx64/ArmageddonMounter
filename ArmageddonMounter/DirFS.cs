@@ -41,7 +41,18 @@ namespace ArmageddonMounter
 
         bool RequestIsValid(string path, IDokanFileInfo info)
         {
-            return !info.IsDirectory && !path.Contains("\\");
+            if (info.IsDirectory)
+                return false;
+
+            if (path == "\\")
+                return true;
+
+            if(path.Length > 1)
+            {
+                return !path.Substring(1).Contains("\\");
+            }
+
+            return path.Length > 0;
         }
 
         // ----- Dokan interface methods -----
