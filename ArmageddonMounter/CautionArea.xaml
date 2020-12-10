@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="ArmageddonMounter.CautionArea"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="500">
+    <Grid Width="1000" Height="1000">
+        <Border Background="Black"/>
+
+        <Border>
+            <Border.Background>
+                <DrawingBrush TileMode="Tile" Viewport="0,0,50,50" ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <GeometryDrawing Brush="#db0">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry>
+
+                                    <PathFigure StartPoint="50,100">
+                                        <LineSegment Point="0,100"/>
+                                        <LineSegment Point="0,0"/>
+                                        <LineSegment Point="50,0"/>
+                                    </PathFigure>
+
+                                    <PathFigure StartPoint="105,0"/>
+
+                                </PathGeometry>
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingBrush.Drawing>
+
+                    <DrawingBrush.RelativeTransform>
+                        <RotateTransform Angle="45"/>
+                    </DrawingBrush.RelativeTransform>
+                </DrawingBrush>
+            </Border.Background>
+        </Border>
+    </Grid>
+</UserControl>
