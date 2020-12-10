@@ -1,13 +1,24 @@
 ﻿using DokanNet;
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 
 namespace ArmageddonMounter
 {
+    enum UnmountingPhase
+    {
+        NotInitiated,
+        Initiated,
+        Shutdown,
+    }
+
     public partial class MainWindow : Window
     {
         DirFS fs;
+        UnmountingPhase unmountingPhase = UnmountingPhase.NotInitiated;
+
+        readonly char DRIVE_LETTER = 'w';
 
         void Panic(string msg)
         {
@@ -28,7 +39,12 @@ namespace ArmageddonMounter
 
                 new Thread(() =>
                 {
-                    fs.Mount("w:\\", DokanOptions.StderrOutput);
+                    fs.Mount(DRIVE_LETTER + ":\\", DokanOptions.StderrOutput);
+                    Dispatcher.Invoke(() =>
+                    {
+                        unmountingPhase = UnmountingPhase.Shutdown;
+                        Close();
+                    });
                 }).Start();
             }
 
@@ -75,6 +91,81 @@ namespace ArmageddonMounter
                     if(exit) break;
                 }
             }).Start();
+        }
+
+        private void OnClosing(object sender, CancelEventArgs e)
+        {
+            if (unmountingPhase != UnmountingPhase.NotInitiated)
+            {
+                if (unmountingPhase == UnmountingPhase.Initiated)
+                    e.Cancel = true;
+
+                return;
+            }
+
+            if (Dokan.Unmount(DRIVE_LETTER))
+            {
+                e.Cancel = true;
+                unmountingPhase = UnmountingPhase.Initiated;
+
+                pathRow.Opacity = 0;
+                messageRow.Text = "Unmounting...";
+                saveButton.Opacity = 0;
+                saveButton.IsEnabled = false;
+            }
+            else
+            {
+                MessageBox.Show("Due to some reason, unmounting wasn't successful.\n\n"
+                    + "The application will be TERMINATED right after the OK button is pressed.\n\nBye.", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(-1);
+            }
+        }
+
+        private void AnimateSaveFader()
+        {
+            saveFader.Opacity = 1;
+            saveButton.IsEnabled = false;
+            saveButton.Width = saveButton.ActualWidth;
+            
+            var btnText = saveButton.Content;
+            saveButton.Content = "Success!";
+
+            new Thread(() =>
+            {
+                bool exit = false;
+
+                while(true)
+                {
+                    if (exit)
+                        break;
+
+                    Thread.Sleep(10);
+                    Dispatcher.Invoke(() =>
+                    {
+                        saveFader.Opacity -= 0.05;
+                        if (saveFader.Opacity < 0)
+                        {
+                            saveButton.Content = btnText;
+                            saveButton.IsEnabled = true;
+                            saveButton.Width = double.NaN;
+                            exit = true;
+                        }
+                    });
+                }
+            }).Start();
+        }
+
+        private void OnSaveButtonClicked(object sender, RoutedEventArgs e)
+        {
+            if(fs.Save() == DokanResult.Success)
+            {
+                AnimateSaveFader();
+            }
+            else
+            {
+                MessageBox.Show("Saving failed due to I/O error.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }

@@ -22,7 +22,7 @@ namespace ArmageddonMounter
             volumeName = path[path.Length - 1];
         }
 
-        NtStatus Save()
+        public NtStatus Save()
         {
             try
             {
