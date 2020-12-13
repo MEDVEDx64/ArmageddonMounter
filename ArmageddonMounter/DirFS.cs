@@ -49,21 +49,56 @@ namespace ArmageddonMounter
             return DokanResult.Success;
         }
 
+        NtStatus AllocateDirectory(string key)
+        {
+            return AllocateFile(key + "\\.dummy");
+        }
+
         string GetFileKey(string path)
         {
-            if (path == "\\")
-                return path;
-
             if (path.StartsWith("\\"))
                 return path.Substring(1);
 
             return path;
         }
 
+        bool IsADirectory(string key)
+        {
+            foreach(var k in arc.Keys)
+            {
+                if (key.Length > k.Length && k.StartsWith(key) && key[k.Length] == '\\')
+                    return true;
+            }
+
+            return false;
+        }
+
         // ----- Dokan interface methods -----
 
         public void Cleanup(string fileName, IDokanFileInfo info)
         {
+            if(info.DeleteOnClose)
+            {
+                fileName = GetFileKey(fileName);
+                if (info.IsDirectory)
+                {
+                    var keysToRemove = new List<string>();
+                    foreach(var k in arc.Keys)
+                    {
+                        if (k.StartsWith(fileName))
+                            keysToRemove.Add(k);
+                    }
+
+                    foreach (var k in keysToRemove)
+                        arc.Remove(k);
+                }
+                else
+                {
+                    arc.Remove(fileName);
+                }
+            }
+
+            Save();
         }
 
         public void CloseFile(string fileName, IDokanFileInfo info)
@@ -77,7 +112,34 @@ namespace ArmageddonMounter
 
             if ((mode == FileMode.Create || mode == FileMode.OpenOrCreate) && arc.ContainsKey(fileName))
             {
-                return DokanResult.AlreadyExists;
+                return DokanResult.FileExists;
+            }
+
+            if(mode == FileMode.Create || mode == FileMode.CreateNew || mode == FileMode.OpenOrCreate)
+            {
+                if (info.IsDirectory)
+                {
+                    if (fileName == "" || arc.ContainsKey(fileName))
+                        return DokanResult.FileExists;
+
+                    if (mode == FileMode.OpenOrCreate)
+                    {
+                        if (IsADirectory(fileName))
+                            return DokanResult.FileExists;
+                    }
+
+                    return AllocateDirectory(fileName);
+                }
+                else
+                {
+                    if (mode == FileMode.OpenOrCreate)
+                    {
+                        if (arc.ContainsKey(fileName))
+                            return DokanResult.FileExists;
+                    }
+
+                    return AllocateFile(fileName);
+                }
             }
 
             return DokanResult.Success;
@@ -85,17 +147,20 @@ namespace ArmageddonMounter
 
         public NtStatus DeleteDirectory(string fileName, IDokanFileInfo info)
         {
-            return DokanResult.FileNotFound;
+            fileName = GetFileKey(fileName);
+            if (IsADirectory(fileName))
+                return DokanResult.Success;
+
+            if (arc.ContainsKey(fileName))
+                return DokanResult.NotADirectory;
+
+            return DokanResult.PathNotFound;
         }
 
         public NtStatus DeleteFile(string fileName, IDokanFileInfo info)
         {
-            fileName = GetFileKey(fileName);
-            if (arc.ContainsKey(fileName))
-            {
-                arc.Remove(fileName);
+            if (arc.ContainsKey(GetFileKey(fileName)))
                 return DokanResult.Success;
-            }
 
             return DokanResult.FileNotFound;
         }
@@ -218,6 +283,13 @@ namespace ArmageddonMounter
 
             var file = arc[fileName];
             int opSize = Math.Min(buffer.Length, file.Length - (int)offset);
+
+            if(opSize < 0)
+            {
+                bytesRead = 0;
+                return DokanResult.Error;
+            }
+
             Array.Copy(file, offset, buffer, 0, opSize);
             bytesRead = opSize;
 
@@ -232,11 +304,6 @@ namespace ArmageddonMounter
         public NtStatus SetEndOfFile(string fileName, long length, IDokanFileInfo info)
         {
             fileName = GetFileKey(fileName);
-
-            var status = AllocateFile(fileName);
-            if (status != DokanResult.Success)
-                return status;
-
             var file = new byte[length];
             Array.Copy(arc[fileName], file, Math.Min(length, arc[fileName].Length));
             arc[fileName] = file;
@@ -275,19 +342,12 @@ namespace ArmageddonMounter
         {
             fileName = GetFileKey(fileName);
 
-            var status = AllocateFile(fileName);
-            if (status != DokanResult.Success)
-            {
-                bytesWritten = 0;
-                return status;
-            }
-
             if (offset == -1) // Append mode
                 offset = arc[fileName].Length;
 
             if ((buffer.Length + offset) > arc[fileName].Length)
             {
-                status = SetEndOfFile(fileName, buffer.Length + offset, info);
+                var status = SetEndOfFile(fileName, buffer.Length + offset, info);
                 if (status != DokanResult.Success)
                 {
                     bytesWritten = 0;
