@@ -124,7 +124,7 @@ namespace ArmageddonMounter
 
         private void AnimateSaveFader()
         {
-            saveFader.Opacity = 1;
+            saveFader.Opacity = 0.75;
             saveButton.IsEnabled = false;
             saveButton.Width = saveButton.ActualWidth;
             
@@ -140,7 +140,7 @@ namespace ArmageddonMounter
                     if (exit)
                         break;
 
-                    Thread.Sleep(10);
+                    Thread.Sleep(12);
                     Dispatcher.Invoke(() =>
                     {
                         saveFader.Opacity -= 0.05;
