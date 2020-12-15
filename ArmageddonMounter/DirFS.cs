@@ -169,15 +169,45 @@ namespace ArmageddonMounter
         {
             files = new List<FileInformation>();
 
-            foreach (var k in arc.Keys)
+            int depth = 0;
+            bool isDir;
+            var key = GetFileKey(fileName);
+            var knownDirs = new List<string>();
+            
+            if (fileName != "\\")
             {
-                files.Add(new FileInformation()
+                foreach (char c in fileName)
                 {
-                    FileName = k,
-                    Length = arc[k].Length,
-                });
+                    if (c == '\\')
+                        depth++;
+                }
             }
 
+            foreach(var k in arc.Keys)
+            {
+                if (!k.StartsWith(key))
+                    continue;
+
+                var path = k.Split('\\');
+                isDir = false;
+
+                if (path.Length > depth + 1)
+                {
+                    if (knownDirs.Contains(path[depth]))
+                        continue;
+
+                    knownDirs.Add(path[depth]);
+                    isDir = true;
+                }
+
+                files.Add(new FileInformation()
+                {
+                    FileName = path[depth],
+                    Attributes = (isDir ? FileAttributes.Directory : FileAttributes.Normal),
+                    Length = (isDir ? 0 : arc[k].Length),
+                });
+            }
+            
             return DokanResult.Success;
         }
 
