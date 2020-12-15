@@ -254,10 +254,19 @@ namespace ArmageddonMounter
             }
 
             fileName = GetFileKey(fileName);
+            var path = fileName.Split('\\');
+            fileInfo.FileName = path[path.Length - 1];
+
+            if(IsADirectory(fileName))
+            {
+                fileInfo.Attributes = FileAttributes.Directory;
+                return DokanResult.Success;
+            }
+
             if (!arc.ContainsKey(fileName))
                 return DokanResult.FileNotFound;
 
-            fileInfo.FileName = fileName;
+            fileInfo.Attributes = FileAttributes.Normal;
             fileInfo.Length = arc[fileName].Length;
 
             return DokanResult.Success;
