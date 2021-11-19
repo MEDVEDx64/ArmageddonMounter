@@ -1,5 +1,4 @@
 ﻿using DokanNet;
-using Syroot.Worms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,14 +8,14 @@ namespace ArmageddonMounter
 {
     class DirFS : IDokanOperations
     {
-        Archive arc;
+        WrappedArchive arc;
         string arcPath;
         string volumeName;
 
         public DirFS(string arcPath)
         {
             this.arcPath = arcPath;
-            arc = new Archive(arcPath);
+            arc = new WrappedArchive(arcPath);
 
             var path = arcPath.Split('\\');
             volumeName = path[path.Length - 1];
