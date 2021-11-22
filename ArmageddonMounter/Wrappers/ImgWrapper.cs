@@ -1,7 +1,4 @@
-﻿//using SixLabors.ImageSharp;
-//using SixLabors.ImageSharp.Formats.Png;
-//using SixLabors.ImageSharp.PixelFormats;
-using Syroot.Worms;
+﻿using Syroot.Worms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +12,8 @@ namespace ArmageddonMounter.Wrappers
         unsafe static extern int MakePng(
             byte* dst, int dstLen,
             byte* srcPixels, int srcLen,
-            void* pal, int palItems);
+            void* pal, int palItems,
+            int width, int height);
 
         unsafe public byte[] ToExternal(byte[] bytes)
         {
@@ -29,12 +27,6 @@ namespace ArmageddonMounter.Wrappers
                 Marshal.Copy(img.Data, 0, pixels, img.Data.Length);
 
                 var palette = new List<byte>();
-                
-                for(int i = 0; i < 3; i++)
-                {
-                    // first color is always black
-                    palette.Add(0);
-                }
 
                 foreach(var col in img.Palette)
                 {
@@ -50,22 +42,8 @@ namespace ArmageddonMounter.Wrappers
                 int pngLen = img.Size.Width * img.Size.Height;
                 var png = Marshal.AllocHGlobal(pngLen);
 
-                /*
-                using (var png = Image.WrapMemory<L8>((void*)pixels, img.Size.Width, img.Size.Height))
-                {
-                    using (var pngFile = new MemoryStream())
-                    {
-                        png.SaveAsPng(pngFile, new PngEncoder()
-                        {
-                            BitDepth = PngBitDepth.Bit8,
-                            ColorType = PngColorType.Palette,
-                            CompressionLevel = PngCompressionLevel.BestSpeed,
-                        });
-                    }
-                }
-                */
-
-                var pngBytesLen = MakePng((byte*)png, pngLen, (byte*)pixels, img.Data.Length, (void*)palettePtr, palette.Count);
+                var pngBytesLen = MakePng((byte*)png, pngLen, (byte*)pixels, img.Data.Length,
+                    (void*)palettePtr, palette.Count, img.Size.Width, img.Size.Height);
                 if (pngBytesLen <= 0)
                     throw new InvalidOperationException("Conversion failure");
 
@@ -82,7 +60,7 @@ namespace ArmageddonMounter.Wrappers
 
         public byte[] ToInternal(byte[] bytes)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

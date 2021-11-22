@@ -33,8 +33,10 @@ namespace ArmageddonMounter
                 Panic("Please drop a .dir file into this application.");
             }
 
+#if !DEBUG
             try
             {
+#endif
                 fs = new DirFS(args[0]);
 
                 new Thread(() =>
@@ -46,12 +48,14 @@ namespace ArmageddonMounter
                         Close();
                     });
                 }).Start();
+#if !DEBUG
             }
 
             catch(Exception e)
             {
                 Panic(e.ToString());
             }
+#endif
 
             InitializeComponent();
 
