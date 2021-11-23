@@ -101,13 +101,10 @@ namespace ArmageddonMounter
                     arc.Remove(fileName);
                 }
             }
-
-            Save();
         }
 
         public void CloseFile(string fileName, IDokanFileInfo info)
         {
-            Save();
         }
 
         public NtStatus CreateFile(string fileName, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, IDokanFileInfo info)

@@ -1,7 +1,10 @@
 ﻿using Syroot.Worms;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace ArmageddonMounter.Wrappers
@@ -60,7 +63,34 @@ namespace ArmageddonMounter.Wrappers
 
         public byte[] ToInternal(byte[] bytes)
         {
-            throw new NotImplementedException();
+            using(var srcStream = new MemoryStream(bytes))
+            {
+                using (var png = Image.FromStream(srcStream))
+                {
+                    var pixels = new byte[png.Width * png.Height];
+
+                    using (var bitmap = new Bitmap(png))
+                    {
+                        var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                            ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+                        Marshal.Copy(data.Scan0, pixels, 0, pixels.Length);
+                        bitmap.UnlockBits(data);
+                    }
+
+                    var img = new Img();
+
+                    img.BitsPerPixel = 8;
+                    img.Data = pixels;
+                    img.Palette = png.Palette.Entries.ToList();
+                    img.Size = png.Size;
+
+                    using (var dstStream = new MemoryStream())
+                    {
+                        img.Save(dstStream);
+                        return dstStream.ToArray();
+                    }
+                }
+            }
         }
     }
 }
