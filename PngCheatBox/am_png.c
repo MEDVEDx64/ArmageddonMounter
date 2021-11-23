@@ -13,7 +13,8 @@ __declspec(dllexport) int am_png_make(uint8_t* dst, int dst_len, uint8_t* src, i
 	img.colormap_entries = pal_len / 3;
 
 	int wsize = dst_len;
-	png_image_write_to_memory(&img, dst, &wsize, 0, src, 0, palette);
+	if (!png_image_write_to_memory(&img, dst, &wsize, 0, src, 0, palette))
+		return 0;
 
 	return wsize;
 }
