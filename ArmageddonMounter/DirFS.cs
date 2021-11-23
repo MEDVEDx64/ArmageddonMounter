@@ -12,6 +12,9 @@ namespace ArmageddonMounter
         string arcPath;
         string volumeName;
 
+        readonly DateTime volCreationDate;
+        Dictionary<string, DateTime> dateModifiedUpdates;
+
         public DirFS(string arcPath)
         {
             this.arcPath = arcPath;
@@ -19,6 +22,8 @@ namespace ArmageddonMounter
 
             var path = arcPath.Split('\\');
             volumeName = path[path.Length - 1];
+            volCreationDate = DateTime.Now;
+            dateModifiedUpdates = new Dictionary<string, DateTime>();
         }
 
         public NtStatus Save()
@@ -204,7 +209,10 @@ namespace ArmageddonMounter
                     FileName = path[depth],
                     Attributes = (isDir ? FileAttributes.Directory : FileAttributes.Normal),
                     Length = (isDir ? 0 : arc[k].Length),
-                });
+                    CreationTime = volCreationDate,
+                    LastWriteTime = (isDir && dateModifiedUpdates.ContainsKey(key)) ? dateModifiedUpdates[key] : volCreationDate,
+                    LastAccessTime = volCreationDate,
+            });
             }
             
             return DokanResult.Success;
@@ -254,9 +262,13 @@ namespace ArmageddonMounter
 
             fileName = GetFileKey(fileName);
             var path = fileName.Split('\\');
-            fileInfo.FileName = path[path.Length - 1];
 
-            if(IsADirectory(fileName))
+            fileInfo.FileName = path[path.Length - 1];
+            fileInfo.CreationTime = volCreationDate;
+            fileInfo.LastWriteTime = volCreationDate;
+            fileInfo.LastAccessTime = volCreationDate;
+
+            if (IsADirectory(fileName))
             {
                 fileInfo.Attributes = FileAttributes.Directory;
                 return DokanResult.Success;
@@ -267,6 +279,9 @@ namespace ArmageddonMounter
 
             fileInfo.Attributes = FileAttributes.Normal;
             fileInfo.Length = arc[fileName].Length;
+
+            if (dateModifiedUpdates.ContainsKey(fileName))
+                fileInfo.LastWriteTime = dateModifiedUpdates[fileName];
 
             return DokanResult.Success;
         }
@@ -351,7 +366,7 @@ namespace ArmageddonMounter
 
         public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, IDokanFileInfo info)
         {
-            // Attribures is not supported here, so just ignoring it.
+            // File attribures are not supported here, so just ignoring it.
             return DokanResult.Success;
         }
 
@@ -362,7 +377,10 @@ namespace ArmageddonMounter
 
         public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, IDokanFileInfo info)
         {
-            // Storing of timestamps is not supported
+            // There is no support for timestamp storage in the .dir, but we will manage lastWriteTime virtually updateable.
+            if (lastWriteTime != null && fileName != "\\")
+                dateModifiedUpdates[GetFileKey(fileName)] = (DateTime)lastWriteTime;
+
             return DokanResult.Success;
         }
 
