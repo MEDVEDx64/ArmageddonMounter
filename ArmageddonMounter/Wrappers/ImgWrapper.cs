@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,6 +10,12 @@ namespace ArmageddonMounter.Wrappers
 {
     public class ImgWrapper : IConversionWrapper
     {
+        [DllImport("PngCheatBox", EntryPoint = "am_png_read", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern bool ReadPng(PngImageData* dst, void* src, int srcLen);
+
+        [DllImport("PngCheatBox", EntryPoint = "am_png_read_end", CallingConvention = CallingConvention.Cdecl)]
+        unsafe static extern void ReadPngEnd(PngImageData* imageData);
+
         [DllImport("PngCheatBox", EntryPoint = "am_png_make", CallingConvention = CallingConvention.Cdecl)]
         unsafe static extern int MakePng(
             byte* dst, int dstLen,
@@ -61,36 +66,54 @@ namespace ArmageddonMounter.Wrappers
             }
         }
 
-        public byte[] ToInternal(byte[] bytes)
+        unsafe public byte[] ToInternal(byte[] bytes)
         {
-            using(var srcStream = new MemoryStream(bytes))
+            byte[] dst = null;
+            PngImageData imageData;
+            var src = Marshal.AllocHGlobal(bytes.Length);
+            Marshal.Copy(bytes, 0, src, bytes.Length);
+
+            var success = ReadPng(&imageData, (void*)src, bytes.Length);
+
+            if (success)
             {
-                using (var png = Image.FromStream(srcStream))
+                var pixels = new byte[imageData.Width * imageData.Height];
+                Marshal.Copy((IntPtr)imageData.Pixels, pixels, 0, pixels.Length);
+
+                var palette = new List<Color>();
+                var paletteBytes = new byte[imageData.PaletteLength];
+                Marshal.Copy((IntPtr)imageData.Palette, paletteBytes, 0, imageData.PaletteLength);
+
+                for(int i = 0; i < paletteBytes.Length; i += 3)
                 {
-                    var pixels = new byte[png.Width * png.Height];
+                    palette.Add(Color.FromArgb(
+                        paletteBytes[i],
+                        paletteBytes[i + 1],
+                        paletteBytes[i + 2]
+                    ));
+                }
 
-                    using (var bitmap = new Bitmap(png))
-                    {
-                        var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                            ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
-                        Marshal.Copy(data.Scan0, pixels, 0, pixels.Length);
-                        bitmap.UnlockBits(data);
-                    }
+                var img = new Img();
 
-                    var img = new Img();
+                img.BitsPerPixel = 8;
+                img.Data = pixels;
+                img.Palette = palette;
+                img.Size = new Size(imageData.Width, imageData.Height);
 
-                    img.BitsPerPixel = 8;
-                    img.Data = pixels;
-                    img.Palette = png.Palette.Entries.ToList();
-                    img.Size = png.Size;
-
-                    using (var dstStream = new MemoryStream())
-                    {
-                        img.Save(dstStream);
-                        return dstStream.ToArray();
-                    }
+                using (var dstStream = new MemoryStream())
+                {
+                    img.Save(dstStream);
+                    dst = dstStream.ToArray();
                 }
             }
+
+            ReadPngEnd(&imageData);
+            Marshal.FreeHGlobal(src);
+
+            if (!success)
+                throw new InvalidOperationException("PNG reading has failed");
+
+            return dst;
         }
     }
 }
