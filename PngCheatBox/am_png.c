@@ -34,7 +34,7 @@ void read_data_from_mem(png_structp png_ptr, png_bytep dst, png_size_t count) {
 	}
 
 	memcpy(dst, s->cur, count);
-	s->cur++;
+	s->cur = (uint8_t*)(((int)s->cur) + count);
 }
 
 #define CLEANUP() do { \
