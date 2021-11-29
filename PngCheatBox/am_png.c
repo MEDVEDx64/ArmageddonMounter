@@ -76,9 +76,12 @@ __declspec(dllexport) bool am_png_read(img_data_t* dst, void* src, int src_len) 
 		return false;
 	}
 
-	dst->palette = malloc(0x100);
-	png_get_PLTE(png_ptr, info_ptr, dst->palette, &dst->palette_len);
+	png_colorp palette = NULL;
+	png_get_PLTE(png_ptr, info_ptr, &palette, &dst->palette_len);
+	
 	dst->palette_len *= 3;
+	dst->palette = malloc(dst->palette_len);
+	memcpy(dst->palette, palette, dst->palette_len);
 
 	dst->pixels = malloc(dst->width * dst->height);
 	png_bytep row = dst->pixels;
