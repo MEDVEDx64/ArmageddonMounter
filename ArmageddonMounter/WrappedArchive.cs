@@ -45,7 +45,7 @@ namespace ArmageddonMounter
                     arc[k] = this[k];
             }
 
-            arc.Save(path);
+            arc.SaveNative(path);
         }
     }
 }

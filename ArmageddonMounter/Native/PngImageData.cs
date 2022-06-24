@@ -1,4 +1,4 @@
-﻿namespace ArmageddonMounter.Wrappers
+﻿namespace ArmageddonMounter.Native
 {
     public unsafe struct PngImageData
     {

@@ -1,8 +1,4 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <png.h>
+#include "stdafx.h"
 
 typedef struct {
 	uint8_t* cur;

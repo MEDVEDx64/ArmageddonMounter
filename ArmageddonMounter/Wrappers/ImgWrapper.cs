@@ -1,4 +1,5 @@
-﻿using Syroot.Worms;
+﻿using ArmageddonMounter.Native;
+using Syroot.Worms;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -9,19 +10,6 @@ namespace ArmageddonMounter.Wrappers
 {
     public class ImgWrapper : IConversionWrapper
     {
-        [DllImport("PngCheatBox", EntryPoint = "am_png_read", CallingConvention = CallingConvention.Cdecl)]
-        unsafe static extern bool ReadPng(PngImageData* dst, void* src, int srcLen);
-
-        [DllImport("PngCheatBox", EntryPoint = "am_png_read_end", CallingConvention = CallingConvention.Cdecl)]
-        unsafe static extern void ReadPngEnd(PngImageData* imageData);
-
-        [DllImport("PngCheatBox", EntryPoint = "am_png_make", CallingConvention = CallingConvention.Cdecl)]
-        unsafe static extern int MakePng(
-            byte* dst, int dstLen,
-            byte* srcPixels, int srcLen,
-            void* pal, int palItems,
-            int width, int height);
-
         unsafe public byte[] ToExternal(byte[] bytes)
         {
             using (var stream = new MemoryStream(bytes))
@@ -49,7 +37,7 @@ namespace ArmageddonMounter.Wrappers
                 int pngLen = img.Size.Width * img.Size.Height;
                 var png = Marshal.AllocHGlobal(pngLen);
 
-                var pngBytesLen = MakePng((byte*)png, pngLen, (byte*)pixels, img.Data.Length,
+                var pngBytesLen = CheatBox.MakePng((byte*)png, pngLen, (byte*)pixels, img.Data.Length,
                     (void*)palettePtr, palette.Count, img.Size.Width, img.Size.Height);
                 if (pngBytesLen <= 0)
                     throw new InvalidOperationException("Conversion failure");
@@ -72,7 +60,7 @@ namespace ArmageddonMounter.Wrappers
             var src = Marshal.AllocHGlobal(bytes.Length);
             Marshal.Copy(bytes, 0, src, bytes.Length);
 
-            var success = ReadPng(&imageData, (void*)src, bytes.Length);
+            var success = CheatBox.ReadPng(&imageData, (void*)src, bytes.Length);
 
             if (success)
             {
@@ -106,7 +94,7 @@ namespace ArmageddonMounter.Wrappers
                 }
             }
 
-            ReadPngEnd(&imageData);
+            CheatBox.ReadPngEnd(&imageData);
             Marshal.FreeHGlobal(src);
 
             if (!success)

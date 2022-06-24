@@ -91,14 +91,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ArchiveExtensions.cs" />
     <Compile Include="CautionArea.xaml.cs">
       <DependentUpon>CautionArea.xaml</DependentUpon>
     </Compile>
     <Compile Include="DirFS.cs" />
+    <Compile Include="Native\CheatBox.cs" />
     <Compile Include="Wrappers\IConversionWrapper.cs" />
     <Compile Include="Wrappers\ImgWrapper.cs" />
     <Compile Include="WrappedArchive.cs" />
-    <Compile Include="Wrappers\PngImageData.cs" />
+    <Compile Include="Native\PngImageData.cs" />
     <Page Include="CautionArea.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
