@@ -7,10 +7,10 @@
 #define HASH_BITS 10
 #define HASH_SIZE (1 << HASH_BITS)
 
-static uint32_t htab[HTAB_SIZE];
-static uint8_t* ftab = NULL;
-static int ftab_size = 0;
-static FILE* dir_f = NULL;
+uint32_t htab[HTAB_SIZE];
+uint8_t* ftab = NULL;
+int ftab_size = 0;
+FILE* dir_f = NULL;
 
 typedef struct dir_file_entry {
 	uint32_t next_entry;
@@ -55,7 +55,7 @@ __declspec(dllexport) bool am_dir_begin(const wchar_t* path) {
 		return false;
 
 	uint32_t header[3] = { 0x1a524944, 0, 0 };
-	if (fwrite(header, 3, 1, dir_f) != 1)
+	if (fwrite(header, 12, 1, dir_f) != 1)
 		return false;
 
 	return true;
@@ -74,12 +74,12 @@ __declspec(dllexport) bool am_dir_add(void* data, int len, const char* name) {
 
 	htab[entry_hash] = TOC_OFFSET_BASE + ftab_size;
 
-	int entry_size = 12 /* entry struct size */ + (4 - name_len % 4) /* align */;
+	int entry_size = 12 /* entry struct size */ + name_len + (4 - name_len % 4) /* align */;
 
 	if (ftab)
-		ftab = malloc(entry_size);
-	else
 		ftab = realloc(ftab, ftab_size + entry_size);
+	else
+		ftab = malloc(entry_size);
 
 	dir_file_entry_t* entry = (dir_file_entry_t*)(((int)ftab) + ftab_size);
 	memset(entry, 0, entry_size);
@@ -97,7 +97,7 @@ __declspec(dllexport) bool am_dir_end() {
 	uint32_t magic = 0xa;
 
 	if (fwrite(&magic, 4, 1, dir_f) != 1
-		|| fwrite(htab, HTAB_SIZE, 1, dir_f) != 1)
+		|| fwrite(htab, HTAB_SIZE * 4, 1, dir_f) != 1)
 		return false;
 
 	if (ftab) {
@@ -107,7 +107,7 @@ __declspec(dllexport) bool am_dir_end() {
 
 	uint32_t header[2] = { ftell(dir_f), toc_offset };
 	fseek(dir_f, 4, SEEK_SET);
-	if (!fwrite(header, 8, 1, dir_f) != 1)
+	if (fwrite(header, 8, 1, dir_f) != 1)
 		return false;
 
 	fclose(dir_f);

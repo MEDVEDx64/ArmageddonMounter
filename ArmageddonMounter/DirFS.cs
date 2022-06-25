@@ -28,16 +28,19 @@ namespace ArmageddonMounter
 
         public NtStatus Save()
         {
+#if !DEBUG
             try
             {
+#endif
                 arc.Save(arcPath);
+#if !DEBUG
             }
 
             catch
             {
                 return NtStatus.InternalError;
             }
-
+#endif
             return DokanResult.Success;
         }
 

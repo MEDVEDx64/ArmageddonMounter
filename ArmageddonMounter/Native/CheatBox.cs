@@ -24,12 +24,12 @@ namespace ArmageddonMounter.Native
         // Archive
 
         [DllImport(dllName, EntryPoint = "am_dir_begin", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArchiveBegin([MarshalAs(UnmanagedType.LPWStr)] string path);
+        public static extern bool ArchiveBegin([MarshalAs(UnmanagedType.LPWStr)] string path);
 
         [DllImport(dllName, EntryPoint = "am_dir_add", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void AddFileToArchive(void* data, int len, [MarshalAs(UnmanagedType.LPStr)] string name);
+        public static extern bool AddFileToArchive(void* data, int len, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         [DllImport(dllName, EntryPoint = "am_dir_end", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArchiveEnd();
+        public static extern bool ArchiveEnd();
     }
 }
