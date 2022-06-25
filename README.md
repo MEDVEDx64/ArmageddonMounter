@@ -16,12 +16,13 @@ Uses [Syroot.Worms](https://gitlab.com/Syroot/Worms) framework.
 * Full read support for files and directories
   * No timestamps and attributes, as there is nowhere to store them
 * File editing operations (writing, moving/renaming and deletion)
+* On-the-fly IMG <-> PNG conversion
 
 #### Features implemented partially or having serious issues:
 * Anything related to directories structure modification
 
 #### Planned features (but *never promised to happen*):
-* On-the-fly IMG/SPR <-> PNG (or something else) conversion
+* SPR <-> PNG conversion
 
 Requirements
 ------------
