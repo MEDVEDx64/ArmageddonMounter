@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Graphics\entity_error.png" />
+    <None Remove="Graphics\entity_pending.png" />
+    <None Remove="Graphics\entity_processing.png" />
+    <None Remove="Graphics\entity_success.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DevExpressMvvm" Version="21.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArmageddonMounter\ArmageddonMounter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Graphics\entity_error.png" />
+    <Resource Include="Graphics\entity_pending.png" />
+    <Resource Include="Graphics\entity_processing.png" />
+    <Resource Include="Graphics\entity_success.png" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(SolutionDir)$(ConfigurationName)\*.dll $(TargetDir)" />
+  </Target>
+
+</Project>

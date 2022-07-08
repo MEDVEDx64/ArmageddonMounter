@@ -1,0 +1,87 @@
+﻿<Window x:Class="ArmageddonEncoder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ArmageddonEncoder"
+        mc:Ignorable="d"
+        Title="Armageddon Encoder!" Height="500" Width="420">
+
+    <Window.DataContext>
+        <local:MainWindowViewModel/>
+    </Window.DataContext>
+    
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#FFD0C5FF"/>
+                <GradientStop Color="#FFFBE8FF" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Margin="15px 15px 9px 9px" Background="#8000"/>
+
+        <DataGrid Grid.Row="0"
+                  Margin="12px" BorderBrush="Black"
+                  ItemsSource="{Binding Rows}"
+                  AutoGenerateColumns="False"
+                  CanUserSortColumns="False"
+                  CanUserReorderColumns="False"
+                  CanUserResizeColumns="False"
+                  CanUserResizeRows="False"
+                  IsReadOnly="True">
+            <DataGrid.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{x:Null}"/>
+                            <Setter Property="BorderBrush" Value="{x:Null}"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.CellStyle>
+
+            <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Image Margin="7px 1px 7px 1px"
+                                        Source="{Binding StateIcon}"
+                                        Visibility="{Binding StaticStateIconVisibility}"/>
+                                <Image Margin="7px 1px 7px 1px"
+                                        Source="{Binding StateIcon}"
+                                        Visibility="{Binding AnimatedStateIconVisibility}">
+                                    <Image.RenderTransform>
+                                        <RotateTransform x:Name="StateIconRotation" CenterX="8" CenterY="8"/>
+                                    </Image.RenderTransform>
+                                    <Image.Triggers>
+                                        <EventTrigger RoutedEvent="Image.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="StateIconRotation"
+                                                        Storyboard.TargetProperty="Angle"
+                                                        From="0" To="359.9"
+                                                        Duration="0:0:1.2"
+                                                        RepeatBehavior="Forever"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Image.Triggers>
+                                </Image>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Source file" Binding="{Binding FileName}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
