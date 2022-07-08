@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
@@ -11,10 +11,11 @@
     <None Remove="Graphics\entity_pending.png" />
     <None Remove="Graphics\entity_processing.png" />
     <None Remove="Graphics\entity_success.png" />
+    <None Remove="Graphics\run.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DevExpressMvvm" Version="21.1.5" />
+    <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +27,7 @@
     <Resource Include="Graphics\entity_pending.png" />
     <Resource Include="Graphics\entity_processing.png" />
     <Resource Include="Graphics\entity_success.png" />
+    <Resource Include="Graphics\run.png" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

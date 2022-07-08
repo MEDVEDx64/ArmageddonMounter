@@ -1,10 +1,10 @@
-﻿using DevExpress.Mvvm;
+﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
 
 namespace ArmageddonEncoder
 {
-    public class FileRowViewModel : ViewModelBase
+    public class FileRowViewModel : ObservableObject
     {
         ImageSource stateIcon = StateIcons.Pending;
         Visibility staticIconVis = Visibility.Visible;
@@ -15,8 +15,7 @@ namespace ArmageddonEncoder
             get => stateIcon;
             set
             {
-                stateIcon = value;
-                RaisePropertyChanged(nameof(StateIcon));
+                SetProperty(ref stateIcon, value);
 
                 StaticStateIconVisibility = value == StateIcons.Processing ? Visibility.Hidden : Visibility.Visible;
                 AnimatedStateIconVisibility = value == StateIcons.Processing ? Visibility.Visible : Visibility.Hidden;
@@ -26,21 +25,13 @@ namespace ArmageddonEncoder
         public Visibility StaticStateIconVisibility
         {
             get => staticIconVis;
-            set
-            {
-                staticIconVis = value;
-                RaisePropertyChanged(nameof(StaticStateIconVisibility));
-            }
+            set => SetProperty(ref staticIconVis, value);
         }
 
         public Visibility AnimatedStateIconVisibility
         {
             get => animatedIconVis;
-            set
-            {
-                animatedIconVis = value;
-                RaisePropertyChanged(nameof(AnimatedStateIconVisibility));
-            }
+            set => SetProperty(ref animatedIconVis, value);
         }
     }
 }
