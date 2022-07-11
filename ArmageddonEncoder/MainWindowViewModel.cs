@@ -1,6 +1,11 @@
-﻿using DevExpress.Mvvm;
+﻿using ArmageddonEncoder.Encoders;
+using DevExpress.Mvvm;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace ArmageddonEncoder
 {
@@ -20,6 +25,7 @@ namespace ArmageddonEncoder
         }
 
         public ObservableCollection<FileRowViewModel> Rows { get; } = new ObservableCollection<FileRowViewModel>();
+        public Visibility DragDropTextVisibility => Rows.Count == 0 ? Visibility.Visible : Visibility.Hidden;
 
         public DelegateCommand SelectDestinationFolderCommand { get; }
         public DelegateCommand ConvertToPngCommand { get; }
@@ -28,8 +34,10 @@ namespace ArmageddonEncoder
         public MainWindowViewModel() : base()
         {
             SelectDestinationFolderCommand = new DelegateCommand(SelectDestinationFolder);
-            ConvertToPngCommand = new DelegateCommand(ConvertToPng);
-            ConvertToImgCommand = new DelegateCommand(ConvertToImg);
+            ConvertToPngCommand = new DelegateCommand(async () => await PerformConversion(new PngEncoder()));
+            ConvertToImgCommand = new DelegateCommand(async () => await PerformConversion(new ImgEncoder()));
+
+            Rows.CollectionChanged += (o, e) => RaisePropertyChanged(nameof(DragDropTextVisibility));
         }
 
         void SelectDestinationFolder()
@@ -41,10 +49,11 @@ namespace ArmageddonEncoder
             foreach (var row in Rows)
             {
                 row.StateIcon = StateIcons.Pending;
+                row.StateIconToolTip = null;
             }
         }
 
-        void PerformConversion(Action<FileRowViewModel> convAct)
+        async ValueTask PerformConversion(IMediaEncoder enc)
         {
             if (!isConversionAllowed)
                 return;
@@ -55,18 +64,30 @@ namespace ArmageddonEncoder
 
             foreach(var row in Rows)
             {
-                convAct(row);
+                row.StateIcon = StateIcons.Processing;
+                if (!enc.AcceptableExtensions.Contains(Path.GetExtension(row.FilePath)))
+                {
+                    row.StateIcon = StateIcons.Skipped;
+                    continue;
+                }
+
+                try
+                {
+                    File.WriteAllBytes(Path.Combine(DestinationFolder,
+                        Path.ChangeExtension(Path.GetFileName(row.FilePath), enc.TargetExtension)),
+                        await enc.Encode(File.ReadAllBytes(row.FilePath)));
+
+                    row.StateIcon = StateIcons.Success;
+                }
+
+                catch(Exception e)
+                {
+                    row.StateIcon = StateIcons.Error;
+                    row.StateIconToolTip = e.GetType().ToString() + "\n\n" + e.Message;
+                }
             }
 
             isConversionAllowed = true;
-        }
-
-        void ConvertToPng()
-        {
-        }
-
-        void ConvertToImg()
-        {
         }
     }
 }

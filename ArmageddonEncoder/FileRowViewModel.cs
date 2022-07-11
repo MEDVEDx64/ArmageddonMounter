@@ -1,4 +1,5 @@
 ﻿using DevExpress.Mvvm;
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 
@@ -9,6 +10,8 @@ namespace ArmageddonEncoder
         ImageSource stateIcon = StateIcons.Pending;
         Visibility staticIconVis = Visibility.Visible;
         Visibility animatedIconVis = Visibility.Hidden;
+        string? iconToolTip;
+        string fileName;
 
         public ImageSource StateIcon
         {
@@ -41,6 +44,25 @@ namespace ArmageddonEncoder
                 animatedIconVis = value;
                 RaisePropertyChanged(nameof(AnimatedStateIconVisibility));
             }
+        }
+
+        public string? StateIconToolTip
+        {
+            get => iconToolTip;
+            set
+            {
+                iconToolTip = value;
+                RaisePropertyChanged(nameof(StateIconToolTip));
+            }
+        }
+
+        public string FilePath { get; }
+        public string FileName => fileName;
+
+        public FileRowViewModel(string path)
+        {
+            FilePath = path;
+            fileName = Path.GetFileName(path);
         }
     }
 }

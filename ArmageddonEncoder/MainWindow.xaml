@@ -32,12 +32,15 @@
         <DataGrid Grid.Row="0"
                   Margin="12px" BorderBrush="Black"
                   ItemsSource="{Binding Rows}"
+                  DragDrop.DragEnter="OnDataGridDragEnter"
+                  DragDrop.Drop="OnDataGridDrop"
                   AutoGenerateColumns="False"
                   CanUserSortColumns="False"
                   CanUserReorderColumns="False"
                   CanUserResizeColumns="False"
                   CanUserResizeRows="False"
-                  IsReadOnly="True">
+                  IsReadOnly="True"
+                  AllowDrop="True">
             <DataGrid.CellStyle>
                 <Style TargetType="{x:Type DataGridCell}">
                     <Setter Property="Foreground" Value="Black"/>
@@ -56,8 +59,9 @@
                         <DataTemplate>
                             <Grid>
                                 <Image Margin="7px 1px 7px 1px"
-                                        Source="{Binding StateIcon}"
-                                        Visibility="{Binding StaticStateIconVisibility}"/>
+                                       Source="{Binding StateIcon}"
+                                       Visibility="{Binding StaticStateIconVisibility}"
+                                       ToolTip="{Binding StateIconToolTip}"/>
                                 <Image Margin="7px 1px 7px 1px"
                                         Source="{Binding StateIcon}"
                                         Visibility="{Binding AnimatedStateIconVisibility}">
@@ -100,7 +104,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Column="1" Grid.Row="1" Foreground="Black">
+            <TextBlock Grid.Column="1" Grid.Row="1" Foreground="Black" Visibility="{Binding DragDropTextVisibility}">
                 Drop files here
             </TextBlock>
         </Grid>
@@ -141,7 +145,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button Grid.Column="0" Background="White" Padding="4px 2px" Margin="0 0 2px 0">
+                        <Button Grid.Column="0" Background="White" Padding="4px 2px" Margin="0 0 2px 0" Command="{Binding ConvertToPngCommand}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -164,7 +168,7 @@
                             </Grid>
                         </Button>
 
-                        <Button Grid.Column="1" Background="White" Padding="4px 2px" Margin="2px 0 0 0">
+                        <Button Grid.Column="1" Background="White" Padding="4px 2px" Margin="2px 0 0 0" Command="{Binding ConvertToImgCommand}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>

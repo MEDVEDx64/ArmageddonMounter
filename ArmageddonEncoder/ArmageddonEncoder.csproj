@@ -10,6 +10,7 @@
     <None Remove="Graphics\entity_error.png" />
     <None Remove="Graphics\entity_pending.png" />
     <None Remove="Graphics\entity_processing.png" />
+    <None Remove="Graphics\entity_skipped.png" />
     <None Remove="Graphics\entity_success.png" />
     <None Remove="Graphics\run.png" />
   </ItemGroup>
@@ -26,6 +27,7 @@
     <Resource Include="Graphics\entity_error.png" />
     <Resource Include="Graphics\entity_pending.png" />
     <Resource Include="Graphics\entity_processing.png" />
+    <Resource Include="Graphics\entity_skipped.png" />
     <Resource Include="Graphics\entity_success.png" />
     <Resource Include="Graphics\run.png" />
   </ItemGroup>
