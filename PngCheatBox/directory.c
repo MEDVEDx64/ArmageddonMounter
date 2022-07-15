@@ -32,7 +32,7 @@ static int hash(char* str) {
 }
 
 bool write_data(void* data, int len) {
-	int data_ptr = (int)data;
+	uintptr_t data_ptr = (uintptr_t)data;
 	int blk_len;
 
 	while (len) {
@@ -81,7 +81,7 @@ __declspec(dllexport) bool am_dir_add(void* data, int len, const char* name) {
 	else
 		ftab = malloc(entry_size);
 
-	dir_file_entry_t* entry = (dir_file_entry_t*)(((int)ftab) + ftab_size);
+	dir_file_entry_t* entry = (dir_file_entry_t*)(((uintptr_t)ftab) + ftab_size);
 	memset(entry, 0, entry_size);
 	
 	entry->file_offset = offset;

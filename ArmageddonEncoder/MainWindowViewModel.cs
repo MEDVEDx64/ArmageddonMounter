@@ -11,7 +11,7 @@ namespace ArmageddonEncoder
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        string destFolder = ".\\";
+        string destFolder = "";
         bool isConversionAllowed = true;
 
         public string DestinationFolder
@@ -65,7 +65,7 @@ namespace ArmageddonEncoder
             foreach(var row in Rows)
             {
                 row.StateIcon = StateIcons.Processing;
-                if (!enc.AcceptableExtensions.Contains(Path.GetExtension(row.FilePath)))
+                if (!enc.AcceptableExtensions.Contains(Path.GetExtension(row.FilePath).ToLower()))
                 {
                     row.StateIcon = StateIcons.Skipped;
                     continue;
@@ -73,9 +73,13 @@ namespace ArmageddonEncoder
 
                 try
                 {
-                    File.WriteAllBytes(Path.Combine(DestinationFolder,
-                        Path.ChangeExtension(Path.GetFileName(row.FilePath), enc.TargetExtension)),
-                        await enc.Encode(File.ReadAllBytes(row.FilePath)));
+                    var name = Path.ChangeExtension(Path.GetFileName(row.FilePath), enc.TargetExtension);
+                    var path = DestinationFolder.Length == 0 ?
+                        string.Join(Path.DirectorySeparatorChar, row.FilePath.Split(Path.DirectorySeparatorChar).SkipLast(1)) :
+                        DestinationFolder;
+
+                    Directory.CreateDirectory(path);
+                    File.WriteAllBytes(Path.Combine(path, name), await enc.Encode(File.ReadAllBytes(row.FilePath)));
 
                     row.StateIcon = StateIcons.Success;
                 }

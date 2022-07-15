@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ArmageddonEncoder": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

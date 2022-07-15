@@ -30,12 +30,13 @@ void read_data_from_mem(png_structp png_ptr, png_bytep dst, png_size_t count) {
 	}
 
 	memcpy(dst, s->cur, count);
-	s->cur = (uint8_t*)(((int)s->cur) + count);
+	s->cur = (uint8_t*)(((uintptr_t)s->cur) + count);
 }
 
 #define CLEANUP() do { \
 	png_destroy_info_struct(png_ptr, &info_ptr); \
 	png_destroy_read_struct(&png_ptr, NULL, NULL); \
+	free(s); \
 } while(0)
 
 __declspec(dllexport) bool am_png_read(img_data_t* dst, void* src, int src_len) {
@@ -54,9 +55,9 @@ __declspec(dllexport) bool am_png_read(img_data_t* dst, void* src, int src_len) 
 		return false;
 	}
 
-	stream_t s;
-	create_stream(&s, (void*)(((int)src) + 8), src_len);
-	png_set_read_fn(png_ptr, &s, read_data_from_mem);
+	stream_t* s = malloc(sizeof(stream_t));
+	create_stream(s, (void*)(((uintptr_t)src) + 8), src_len);
+	png_set_read_fn(png_ptr, s, read_data_from_mem);
 
 	png_set_sig_bytes(png_ptr, 8);
 	png_read_info(png_ptr, info_ptr);
@@ -84,7 +85,7 @@ __declspec(dllexport) bool am_png_read(img_data_t* dst, void* src, int src_len) 
 
 	for (int i = 0; i < dst->height; i++) {
 		png_read_row(png_ptr, row, NULL);
-		row = (png_bytep)(((int)row) + dst->width);
+		row = (png_bytep)(((uintptr_t)row) + dst->width);
 	}
 
 	CLEANUP();
@@ -109,7 +110,7 @@ __declspec(dllexport) int am_png_make(uint8_t* dst, int dst_len, uint8_t* src, i
 	img.height = h;
 	img.colormap_entries = pal_len / 3;
 
-	int wsize = dst_len;
+	png_alloc_size_t wsize = dst_len;
 	if (!png_image_write_to_memory(&img, dst, &wsize, 0, src, 0, palette))
 		return 0;
 

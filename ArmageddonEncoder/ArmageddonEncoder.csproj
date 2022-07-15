@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="DevExpressMvvm" Version="21.1.5" />
+    <PackageReference Include="Syroot.Worms" Version="4.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,7 +34,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(SolutionDir)$(ConfigurationName)\*.dll $(TargetDir)" />
+    <Exec Command="copy $(SolutionDir)x64\$(ConfigurationName)\*.dll $(TargetDir)" />
   </Target>
 
 </Project>

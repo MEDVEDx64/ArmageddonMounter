@@ -98,7 +98,7 @@ namespace ArmageddonMounter.Wrappers
             Marshal.FreeHGlobal(src);
 
             if (!success)
-                throw new InvalidOperationException("PNG reading has failed");
+                throw new InvalidOperationException("Invalid PNG (must be palettized 8-bit format)");
 
             return dst;
         }
