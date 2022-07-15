@@ -17,32 +17,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmageddonMounter", "Armage
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6503679F-ED8F-423D-8A3A-328B1291CD95}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{6503679F-ED8F-423D-8A3A-328B1291CD95}.Debug|x64.ActiveCfg = Debug|x64
 		{6503679F-ED8F-423D-8A3A-328B1291CD95}.Debug|x64.Build.0 = Debug|x64
-		{6503679F-ED8F-423D-8A3A-328B1291CD95}.Release|Any CPU.ActiveCfg = Release|Win32
 		{6503679F-ED8F-423D-8A3A-328B1291CD95}.Release|x64.ActiveCfg = Release|x64
 		{6503679F-ED8F-423D-8A3A-328B1291CD95}.Release|x64.Build.0 = Release|x64
-		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Debug|x64.Build.0 = Debug|Any CPU
-		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Release|x64.ActiveCfg = Release|Any CPU
 		{6CF40194-85E7-4D38-86ED-FCF3D9054385}.Release|x64.Build.0 = Release|Any CPU
-		{D9E85DB2-0FB8-4D67-8666-726347388347}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9E85DB2-0FB8-4D67-8666-726347388347}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9E85DB2-0FB8-4D67-8666-726347388347}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{D9E85DB2-0FB8-4D67-8666-726347388347}.Debug|x64.Build.0 = Debug|Any CPU
-		{D9E85DB2-0FB8-4D67-8666-726347388347}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9E85DB2-0FB8-4D67-8666-726347388347}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D9E85DB2-0FB8-4D67-8666-726347388347}.Release|x64.ActiveCfg = Release|Any CPU
 		{D9E85DB2-0FB8-4D67-8666-726347388347}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
