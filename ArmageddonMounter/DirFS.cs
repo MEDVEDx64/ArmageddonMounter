@@ -26,22 +26,9 @@ namespace ArmageddonMounter
             dateModifiedUpdates = new Dictionary<string, DateTime>();
         }
 
-        public NtStatus Save()
+        public void Save()
         {
-#if !DEBUG
-            try
-            {
-#endif
-                arc.Save(arcPath);
-#if !DEBUG
-            }
-
-            catch
-            {
-                return NtStatus.InternalError;
-            }
-#endif
-            return DokanResult.Success;
+            arc.Save(arcPath);
         }
 
         NtStatus AllocateFile(string key)
@@ -232,7 +219,7 @@ namespace ArmageddonMounter
 
         public NtStatus FlushFileBuffers(string fileName, IDokanFileInfo info)
         {
-            return Save();
+            return DokanResult.Success;
         }
 
         public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, IDokanFileInfo info)
@@ -391,7 +378,7 @@ namespace ArmageddonMounter
 
         public NtStatus Unmounted(IDokanFileInfo info)
         {
-            return Save();
+            return DokanResult.Success;
         }
 
         public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, IDokanFileInfo info)

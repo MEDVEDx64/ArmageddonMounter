@@ -1,6 +1,7 @@
 ﻿using DokanNet;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Threading;
 using System.Windows;
 
@@ -107,19 +108,40 @@ namespace ArmageddonMounter
                 return;
             }
 
-            if (Dokan.Unmount(DRIVE_LETTER))
+            try
             {
-                e.Cancel = true;
-                unmountingPhase = UnmountingPhase.Initiated;
+                fs.Save();
 
-                pathRow.Opacity = 0;
-                messageRow.Text = "Unmounting...";
-                saveButton.Opacity = 0;
-                saveButton.IsEnabled = false;
+                if (Dokan.Unmount(DRIVE_LETTER))
+                {
+                    e.Cancel = true;
+                    unmountingPhase = UnmountingPhase.Initiated;
+
+                    pathRow.Opacity = 0;
+                    messageRow.Text = "Unmounting...";
+                    saveButton.Opacity = 0;
+                    saveButton.IsEnabled = false;
+                }
+
+                else
+                {
+                    throw new IOException("Unmount error");
+                }
             }
-            else
+
+            catch(WrappedFileException ef)
+            {
+                if (MessageBox.Show("Some files were not successfully converted and retained unmodified. "
+                    + "If you close this application now, you will lose any changes made to these 'faulted' files.\n\n"
+                    + ef.MessageBoxText + "\n\nDo you want to close the app?", "Warning",
+                    MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    e.Cancel = true;
+            }
+
+            catch(Exception ex)
             {
                 MessageBox.Show("Due to some reason, unmounting wasn't successful.\n\n"
+                    + ex.GetType().ToString() + ": " + ex.Message + "\n\n"
                     + "The application will be TERMINATED right after the OK button is pressed.\n\nBye.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(-1);
@@ -162,11 +184,20 @@ namespace ArmageddonMounter
 
         private void OnSaveButtonClicked(object sender, RoutedEventArgs e)
         {
-            if(fs.Save() == DokanResult.Success)
+            try
             {
+                fs.Save();
                 AnimateSaveFader();
             }
-            else
+
+            catch(WrappedFileException ex)
+            {
+                MessageBox.Show("Some files were not successfully converted and retained unmodified.\n\n"
+                    + ex.MessageBoxText, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AnimateSaveFader();
+            }
+
+            catch
             {
                 MessageBox.Show("Saving failed due to I/O error.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
