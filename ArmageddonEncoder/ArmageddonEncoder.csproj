@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="DevExpressMvvm" Version="21.1.5" />
-    <PackageReference Include="Syroot.Worms" Version="4.0.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ArmageddonMounter": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
