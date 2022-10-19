@@ -112,21 +112,17 @@ namespace ArmageddonMounter
             {
                 fs.Save();
 
-                if (Dokan.Unmount(DRIVE_LETTER))
-                {
-                    e.Cancel = true;
-                    unmountingPhase = UnmountingPhase.Initiated;
+                var result = Dokan.Unmount(DRIVE_LETTER);
+                e.Cancel = true;
+                unmountingPhase = UnmountingPhase.Initiated;
 
-                    pathRow.Opacity = 0;
-                    messageRow.Text = "Unmounting...";
-                    saveButton.Opacity = 0;
-                    saveButton.IsEnabled = false;
-                }
+                pathRow.Opacity = 0;
+                messageRow.Text = "Unmounting...";
+                saveButton.Opacity = 0;
+                saveButton.IsEnabled = false;
 
-                else
-                {
+                if(!result)
                     throw new IOException("Unmount error");
-                }
             }
 
             catch(WrappedFileException ef)
@@ -140,9 +136,9 @@ namespace ArmageddonMounter
 
             catch(Exception ex)
             {
-                MessageBox.Show("Due to some reason, unmounting wasn't successful.\n\n"
+                MessageBox.Show("For some reason, unmounting wasn't successful.\n\n"
                     + ex.GetType().ToString() + ": " + ex.Message + "\n\n"
-                    + "The application will be TERMINATED right after the OK button is pressed.\n\nBye.", "Error",
+                    + "The application will be TERMINATED right after the OK button is clicked. Bye.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(-1);
             }
