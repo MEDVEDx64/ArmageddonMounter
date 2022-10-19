@@ -9,7 +9,7 @@ namespace ArmageddonEncoder.Encoders
         public IEnumerable<string> AcceptableExtensions { get; } = new string[] { ".img" };
         public string TargetExtension => ".png";
 
-        public async ValueTask<byte[]> Encode(byte[] data)
+        public async ValueTask<byte[]> EncodeAsync(byte[] data)
         {
             return await Task.Run(() => new ImgWrapper().ToExternal(data));
         }

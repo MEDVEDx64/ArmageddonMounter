@@ -34,8 +34,8 @@ namespace ArmageddonEncoder
         public MainWindowViewModel() : base()
         {
             SelectDestinationFolderCommand = new DelegateCommand(SelectDestinationFolder);
-            ConvertToPngCommand = new DelegateCommand(async () => await PerformConversion(new PngEncoder()));
-            ConvertToImgCommand = new DelegateCommand(async () => await PerformConversion(new ImgEncoder()));
+            ConvertToPngCommand = new DelegateCommand(async () => await PerformConversionAsync(new PngEncoder()));
+            ConvertToImgCommand = new DelegateCommand(async () => await PerformConversionAsync(new ImgEncoder()));
 
             Rows.CollectionChanged += (o, e) => RaisePropertyChanged(nameof(DragDropTextVisibility));
         }
@@ -53,7 +53,7 @@ namespace ArmageddonEncoder
             }
         }
 
-        async ValueTask PerformConversion(IMediaEncoder enc)
+        async ValueTask PerformConversionAsync(IMediaEncoder enc)
         {
             if (!isConversionAllowed)
                 return;
@@ -79,7 +79,7 @@ namespace ArmageddonEncoder
                         DestinationFolder;
 
                     Directory.CreateDirectory(path);
-                    File.WriteAllBytes(Path.Combine(path, name), await enc.Encode(File.ReadAllBytes(row.FilePath)));
+                    File.WriteAllBytes(Path.Combine(path, name), await enc.EncodeAsync(File.ReadAllBytes(row.FilePath)));
 
                     row.StateIcon = StateIcons.Success;
                 }

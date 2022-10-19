@@ -8,6 +8,6 @@ namespace ArmageddonEncoder.Encoders
         IEnumerable<string> AcceptableExtensions { get; }
         string TargetExtension { get; }
 
-        ValueTask<byte[]> Encode(byte[] data);
+        ValueTask<byte[]> EncodeAsync(byte[] data);
     }
 }
