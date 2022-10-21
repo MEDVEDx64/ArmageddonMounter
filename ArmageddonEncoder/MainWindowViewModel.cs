@@ -1,5 +1,6 @@
 ﻿using ArmageddonEncoder.Encoders;
-using DevExpress.Mvvm;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -9,39 +10,37 @@ using System.Windows;
 
 namespace ArmageddonEncoder
 {
-    public class MainWindowViewModel : ViewModelBase
+    public partial class MainWindowViewModel : ObservableObject
     {
-        string destFolder = "";
-        bool isConversionAllowed = true;
+        [ObservableProperty]
+        string destinationFolder = "";
 
-        public string DestinationFolder
-        {
-            get => destFolder;
-            set
-            {
-                destFolder = value;
-                RaisePropertyChanged(nameof(DestinationFolder));
-            }
-        }
+        bool isConversionAllowed = true;
 
         public ObservableCollection<FileRowViewModel> Rows { get; } = new ObservableCollection<FileRowViewModel>();
         public Visibility DragDropTextVisibility => Rows.Count == 0 ? Visibility.Visible : Visibility.Hidden;
 
-        public DelegateCommand SelectDestinationFolderCommand { get; }
-        public DelegateCommand ConvertToPngCommand { get; }
-        public DelegateCommand ConvertToImgCommand { get; }
-
         public MainWindowViewModel() : base()
         {
-            SelectDestinationFolderCommand = new DelegateCommand(SelectDestinationFolder);
-            ConvertToPngCommand = new DelegateCommand(async () => await PerformConversionAsync(new PngEncoder()));
-            ConvertToImgCommand = new DelegateCommand(async () => await PerformConversionAsync(new ImgEncoder()));
-
-            Rows.CollectionChanged += (o, e) => RaisePropertyChanged(nameof(DragDropTextVisibility));
+            Rows.CollectionChanged += (o, e) => OnPropertyChanged(nameof(DragDropTextVisibility));
+            Rows.CollectionChanged += (o, e) => OnPropertyChanged(nameof(DragDropTextVisibility));
         }
 
+        [RelayCommand]
         void SelectDestinationFolder()
         {
+        }
+
+        [RelayCommand]
+        async void ConvertToPng()
+        {
+            await PerformConversionAsync(new PngEncoder());
+        }
+
+        [RelayCommand]
+        async void ConvertToImg()
+        {
+            await PerformConversionAsync(new ImgEncoder());
         }
 
         void Reset()

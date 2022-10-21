@@ -1,17 +1,18 @@
-﻿using DevExpress.Mvvm;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
 
 namespace ArmageddonEncoder
 {
-    public class FileRowViewModel : ViewModelBase
+    public partial class FileRowViewModel : ObservableObject
     {
         ImageSource stateIcon = StateIcons.Pending;
-        Visibility staticIconVis = Visibility.Visible;
-        Visibility animatedIconVis = Visibility.Hidden;
-        string? iconToolTip;
-        string fileName;
+
+        [ObservableProperty] Visibility staticStateIconVisibility = Visibility.Visible;
+        [ObservableProperty] Visibility animatedStateIconVisibility = Visibility.Hidden;
+        [ObservableProperty] string? stateIconToolTip;
+        [ObservableProperty] string fileName;
 
         public ImageSource StateIcon
         {
@@ -19,45 +20,14 @@ namespace ArmageddonEncoder
             set
             {
                 stateIcon = value;
-                RaisePropertyChanged(nameof(StateIcon));
+                OnPropertyChanged(nameof(StateIcon));
 
                 StaticStateIconVisibility = value == StateIcons.Processing ? Visibility.Hidden : Visibility.Visible;
                 AnimatedStateIconVisibility = value == StateIcons.Processing ? Visibility.Visible : Visibility.Hidden;
             }
         }
 
-        public Visibility StaticStateIconVisibility
-        {
-            get => staticIconVis;
-            set
-            {
-                staticIconVis = value;
-                RaisePropertyChanged(nameof(StaticStateIconVisibility));
-            }
-        }
-
-        public Visibility AnimatedStateIconVisibility
-        {
-            get => animatedIconVis;
-            set
-            {
-                animatedIconVis = value;
-                RaisePropertyChanged(nameof(AnimatedStateIconVisibility));
-            }
-        }
-
-        public string? StateIconToolTip
-        {
-            get => iconToolTip;
-            set
-            {
-                iconToolTip = value;
-                RaisePropertyChanged(nameof(StateIconToolTip));
-            }
-        }
-
         public string FilePath { get; }
-        public string FileName => fileName;
 
         public FileRowViewModel(string path)
         {
